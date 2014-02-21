@@ -1,5 +1,3 @@
-require 'open3'
-
 # Wraps the libzmq library and attaches to the functions that are
 # common across the 3.2.x+ and 4.x APIs.
 #
@@ -11,22 +9,9 @@ module LibZMQ
     # to the usual system paths
     inside_gem = File.join(File.dirname(__FILE__), '..', '..', 'ext')
     local_path = FFI::Platform::IS_WINDOWS ? ENV['PATH'].split(';') : ENV['PATH'].split(':')
-    homebrew_path = nil
-
-    begin
-      stdout, status = Open3.capture2("brew", "--prefix")
-      homebrew_path  = if status.success?
-                        "#{stdout.chomp}/lib"
-                      else
-                        '/usr/local/homebrew/lib'
-                      end
-    rescue
-      # Homebrew doesn't exist
-    end
-
     # Search for libzmq in the following order...
     ZMQ_LIB_PATHS = ([inside_gem] + local_path + [
-                       '/usr/local/lib', '/opt/local/lib', homebrew_path, '/usr/lib64'
+                       '/usr/local/lib', '/opt/local/lib', '/usr/lib64'
     ]).compact.map{|path| "#{path}/libzmq.#{FFI::Platform::LIBSUFFIX}"}
     ffi_lib(ZMQ_LIB_PATHS + %w{libzmq})
 
